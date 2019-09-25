@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ngdata.sep.impl;
+package org.apache.hadoop.hbase.client;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import com.ngdata.sep.util.zookeeper.ZkUtil;
@@ -27,8 +28,12 @@ import com.ngdata.sep.SepModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.replication.ReplicationAdmin;
 import org.apache.hadoop.hbase.replication.ReplicationPeerConfig;
+import org.apache.hadoop.hbase.replication.ReplicationPeerDescription;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.zookeeper.KeeperException;
 
@@ -74,11 +79,12 @@ public class SepModelImpl implements SepModel {
 
     @Override
     public boolean addSubscriptionSilent(String name) throws InterruptedException, KeeperException, IOException {
-        ReplicationAdmin replicationAdmin = new ReplicationAdmin(hbaseConf);
+        HBaseAdmin replicationAdmin = new HBaseAdmin((ClusterConnection)ConnectionFactory.createConnection(hbaseConf));
         try {
             String internalName = toInternalSubscriptionName(name);
-            if (replicationAdmin.listPeerConfigs().containsKey(internalName)) {
-                return false;
+            List<ReplicationPeerDescription> descriptions = replicationAdmin.listReplicationPeers();
+            for (ReplicationPeerDescription desc : descriptions) {
+                if (desc.getPeerId().equals(internalName)) return false;
             }
 
             String basePath = baseZkPath + "/" + internalName;
@@ -88,7 +94,10 @@ public class SepModelImpl implements SepModel {
 
 
             try {
-                replicationAdmin.addPeer(internalName, zkQuorumString + ":" + zkClientPort + ":" + basePath);
+                ReplicationPeerConfig config = ReplicationPeerConfig.newBuilder()
+                        .setClusterKey(zkQuorumString + ":" + zkClientPort + ":" + basePath)
+                        .build();
+                replicationAdmin.addReplicationPeer(internalName, config);
             } catch (IllegalArgumentException e) {
                 if (e.getMessage().equals("Cannot add existing peer")) {
                     return false;
@@ -170,7 +179,7 @@ public class SepModelImpl implements SepModel {
         }
     }
     
-    static String toInternalSubscriptionName(String subscriptionName) {
+    public static String toInternalSubscriptionName(String subscriptionName) {
         if (subscriptionName.indexOf(INTERNAL_HYPHEN_REPLACEMENT, 0) != -1) {
             throw new IllegalArgumentException("Subscription name cannot contain character \\U1400");
         }

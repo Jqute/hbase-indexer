@@ -47,7 +47,7 @@ public class ReplicationStatusCli {
         OptionSpec<Integer> hbaseMasterPortOption = parser
                 .acceptsAll(ImmutableList.of("hbase-master-port"), "HBase Master web ui port number")
                 .withRequiredArg().ofType(Integer.class)
-                .defaultsTo(60010);
+                .defaultsTo(16010);
 
         OptionSet options = null;
         try {

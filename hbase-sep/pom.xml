@@ -33,6 +33,10 @@
     <module>hbase-sep-tools</module>
   </modules>
 
+  <properties>
+    <version.hbase>2.1.2</version.hbase>
+  </properties>
+
   <build>
   </build>
 </project>

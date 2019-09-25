@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ngdata.sep.impl;
+package org.apache.hadoop.hbase.zookeeper;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
@@ -26,6 +26,9 @@ import com.ngdata.sep.EventListener;
 import com.ngdata.sep.PayloadExtractor;
 import com.ngdata.sep.SepEvent;
 import com.ngdata.sep.SepModel;
+import com.ngdata.sep.impl.BaseHRegionServer;
+import com.ngdata.sep.impl.SepEventExecutor;
+import com.ngdata.sep.impl.SepMetrics;
 import com.ngdata.sep.util.concurrent.WaitPolicy;
 import com.ngdata.sep.util.io.Closer;
 import com.ngdata.sep.util.zookeeper.ZooKeeperItf;
@@ -39,14 +42,13 @@ import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.KeyValueUtil;
 import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.SepModelImpl;
 import org.apache.hadoop.hbase.ipc.FifoRpcScheduler;
-import org.apache.hadoop.hbase.ipc.PayloadCarryingRpcController;
 import org.apache.hadoop.hbase.ipc.RpcServer;
+import org.apache.hadoop.hbase.ipc.SimpleRpcServer;
 import org.apache.hadoop.hbase.protobuf.generated.AdminProtos;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.zookeeper.ZKUtil;
-import org.apache.hadoop.hbase.zookeeper.ZooKeeperWatcher;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs;
@@ -80,7 +82,7 @@ public class SepConsumer extends BaseHRegionServer {
     private final Configuration hbaseConf;
     private RpcServer rpcServer;
     private ServerName serverName;
-    private ZooKeeperWatcher zkWatcher;
+    private ZKWatcher zkWatcher;
     private SepMetrics sepMetrics;
     private final PayloadExtractor payloadExtractor;
     private String zkNodePath;
@@ -128,13 +130,14 @@ public class SepConsumer extends BaseHRegionServer {
             throw new IllegalArgumentException("Failed resolve of " + initialIsa);
         }
         String name = "regionserver/" + initialIsa.toString();
-        this.rpcServer = new RpcServer(this, name, getServices(),
+        this.rpcServer = new SimpleRpcServer(this, name, getServices(),
         /*HBaseRPCErrorHandler.class, OnlineRegions.class},*/
                 initialIsa, // BindAddress is IP we got for this server.
                 //hbaseConf.getInt("hbase.regionserver.handler.count", 10),
                 //hbaseConf.getInt("hbase.regionserver.metahandler.count", 10),
                 hbaseConf,
-                new FifoRpcScheduler(hbaseConf, hbaseConf.getInt("hbase.regionserver.handler.count", 10)));
+                new FifoRpcScheduler(hbaseConf, hbaseConf.getInt("hbase.regionserver.handler.count", 10)),
+                false);
           /*
           new SimpleRpcScheduler(
             hbaseConf,
@@ -146,7 +149,7 @@ public class SepConsumer extends BaseHRegionServer {
           );
           */
         this.serverName = ServerName.valueOf(hostName, rpcServer.getListenerAddress().getPort(), System.currentTimeMillis());
-        this.zkWatcher = new ZooKeeperWatcher(hbaseConf, this.serverName.toString(), null);
+        this.zkWatcher = new ZKWatcher(hbaseConf, this.serverName.toString(), null);
 
         // login the zookeeper client principal (if using security)
         ZKUtil.loginClient(hbaseConf, "hbase.zookeeper.client.keytab.file",
@@ -314,7 +317,7 @@ public class SepConsumer extends BaseHRegionServer {
     }
 
     @Override
-    public ZooKeeperWatcher getZooKeeper() {
+    public ZKWatcher getZooKeeper() {
         return zkWatcher;
     }
 

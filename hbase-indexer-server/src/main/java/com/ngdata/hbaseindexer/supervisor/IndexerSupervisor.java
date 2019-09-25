@@ -59,7 +59,7 @@ import com.ngdata.hbaseindexer.model.api.IndexerNotFoundException;
 import com.ngdata.hbaseindexer.model.api.IndexerProcessRegistry;
 import com.ngdata.hbaseindexer.parse.ResultToSolrMapper;
 import com.ngdata.hbaseindexer.util.solr.SolrConnectionParamUtil;
-import com.ngdata.sep.impl.SepConsumer;
+import org.apache.hadoop.hbase.zookeeper.SepConsumer;
 import com.ngdata.sep.util.io.Closer;
 import com.ngdata.sep.util.zookeeper.ZooKeeperItf;
 import org.apache.commons.logging.Log;

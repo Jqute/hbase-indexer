@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import com.ngdata.sep.util.zookeeper.ZooKeeperItf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.SepModelImpl;
 import org.junit.Test;
 
 public class SepModelImplTest {

@@ -20,8 +20,15 @@ import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Server;
 import org.apache.hadoop.hbase.ServerName;
+import org.apache.hadoop.hbase.client.ClusterConnection;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.protobuf.generated.AdminProtos;
-import org.apache.hadoop.hbase.zookeeper.ZooKeeperWatcher;
+import org.apache.hadoop.hbase.security.User;
+import org.apache.hadoop.hbase.shaded.protobuf.generated.RPCProtos;
+import org.apache.hadoop.hbase.zookeeper.ZKWatcher;
+import org.apache.hbase.thirdparty.com.google.protobuf.Message;
+
+import java.io.IOException;
 
 /**
  *
@@ -123,7 +130,7 @@ public class BaseHRegionServer implements AdminProtos.AdminService.BlockingInter
     }
 
     @Override
-    public ZooKeeperWatcher getZooKeeper() {
+    public ZKWatcher getZooKeeper() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -153,17 +160,17 @@ public class BaseHRegionServer implements AdminProtos.AdminService.BlockingInter
     }
 
     @Override
-    public int getPriority(org.apache.hadoop.hbase.protobuf.generated.RPCProtos.RequestHeader header, com.google.protobuf.Message param) {
-        return org.apache.hadoop.hbase.HConstants.NORMAL_QOS;
-    }
-
-    @Override
-    public long getDeadline(org.apache.hadoop.hbase.protobuf.generated.RPCProtos.RequestHeader header, com.google.protobuf.Message param) {
-        return 0;
-    }
-
-    @Override
     public org.apache.hadoop.hbase.client.ClusterConnection getConnection() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public Connection createConnection(Configuration configuration) throws IOException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public ClusterConnection getClusterConnection() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -190,4 +197,13 @@ public class BaseHRegionServer implements AdminProtos.AdminService.BlockingInter
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    @Override
+    public int getPriority(RPCProtos.RequestHeader requestHeader, Message message, User user) {
+        return org.apache.hadoop.hbase.HConstants.NORMAL_QOS;
+    }
+
+    @Override
+    public long getDeadline(RPCProtos.RequestHeader requestHeader, Message message) {
+        return 0;
+    }
 }

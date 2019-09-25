@@ -24,7 +24,7 @@ import com.ngdata.hbaseindexer.supervisor.IndexerRegistry;
 import com.ngdata.hbaseindexer.supervisor.IndexerSupervisor;
 import com.ngdata.hbaseindexer.util.zookeeper.StateWatchingZooKeeper;
 import com.ngdata.sep.SepModel;
-import com.ngdata.sep.impl.SepModelImpl;
+import org.apache.hadoop.hbase.client.SepModelImpl;
 import com.ngdata.sep.util.io.Closer;
 import com.sun.akuma.Daemon;
 import com.sun.jersey.api.core.PackagesResourceConfig;
