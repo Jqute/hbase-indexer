@@ -29,7 +29,7 @@ import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.FSUtils;
-import org.apache.hadoop.hbase.wal.DefaultWALProvider;
+import org.apache.hadoop.hbase.wal.FSHLogProvider;
 import org.apache.hadoop.hbase.zookeeper.ZKUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -50,12 +50,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Collects replication status information.
@@ -302,7 +297,7 @@ public class ReplicationStatusRetriever {
      * @param hlogName name of HLog
      */
     private long getLogFileSize(String serverName, String hlogName) throws IOException {
-        Path hbaseLogDir = new Path(hbaseRootDir, DefaultWALProvider.getWALDirectoryName(serverName));
+        Path hbaseLogDir = new Path(hbaseRootDir, FSHLogProvider.getWALDirectoryName(serverName));
         Path path = new Path(hbaseLogDir, hlogName);
         try {
             FileStatus status = fileSystem.getFileStatus(path);

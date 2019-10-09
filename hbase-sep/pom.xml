@@ -34,7 +34,7 @@
   </modules>
 
   <properties>
-    <version.hbase>2.1.2</version.hbase>
+    <version.hbase>2.0.2</version.hbase>
   </properties>
 
   <build>

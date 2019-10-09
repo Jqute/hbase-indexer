@@ -92,8 +92,8 @@ public class SepConsumerIT {
 
         hbaseTestUtil = new HBaseTestingUtility(clusterConf);
 
-        hbaseTestUtil.startMiniZKCluster(1);
-        hbaseTestUtil.startMiniCluster(1);
+//        hbaseTestUtil.startMiniZKCluster(1);
+//        hbaseTestUtil.startMiniCluster(1);
 
         HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(TABLE_NAME));
         HColumnDescriptor dataColfamDescriptor = new HColumnDescriptor(DATA_COL_FAMILY);
@@ -113,12 +113,12 @@ public class SepConsumerIT {
         if (connection != null) {
             connection.close();
         }
-        hbaseTestUtil.shutdownMiniCluster();
+//        hbaseTestUtil.shutdownMiniCluster();
     }
 
     @Before
     public void setUp() throws ZkConnectException, InterruptedException, KeeperException, IOException {
-        zkItf = ZkUtil.connect("localhost:" + hbaseTestUtil.getZkCluster().getClientPort(), 30000);
+//        zkItf = ZkUtil.connect("localhost:" + hbaseTestUtil.getZkCluster().getClientPort(), 30000);
         sepModel = new SepModelImpl(zkItf, clusterConf);
         sepModel.addSubscription(SUBSCRIPTION_NAME);
         sepModel.addSubscription(SUBSCRIPTION_WITH_PAYLOADS_NAME);

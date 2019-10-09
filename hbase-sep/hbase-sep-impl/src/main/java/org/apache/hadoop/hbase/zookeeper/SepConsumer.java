@@ -20,6 +20,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.protobuf.BlockingService;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import com.ngdata.sep.EventListener;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.SepModelImpl;
 import org.apache.hadoop.hbase.ipc.FifoRpcScheduler;
+import org.apache.hadoop.hbase.ipc.HBaseRpcController;
 import org.apache.hadoop.hbase.ipc.RpcServer;
 import org.apache.hadoop.hbase.ipc.SimpleRpcServer;
 import org.apache.hadoop.hbase.protobuf.generated.AdminProtos;
@@ -181,9 +183,9 @@ public class SepConsumer extends BaseHRegionServer {
 
     private List<RpcServer.BlockingServiceAndInterface> getServices() {
         List<RpcServer.BlockingServiceAndInterface> bssi = new ArrayList<RpcServer.BlockingServiceAndInterface>(1);
+        BlockingService blockingService = AdminProtos.AdminService.newReflectiveBlockingService(this);
         bssi.add(new RpcServer.BlockingServiceAndInterface(
-                AdminProtos.AdminService.newReflectiveBlockingService(this),
-                AdminProtos.AdminService.BlockingInterface.class));
+                (org.apache.hbase.thirdparty.com.google.protobuf.BlockingService) blockingService, AdminProtos.AdminService.BlockingInterface.class));
         return bssi;
     }
 
@@ -224,7 +226,7 @@ public class SepConsumer extends BaseHRegionServer {
             SepEventExecutor eventExecutor = new SepEventExecutor(listener, executors, 100, sepMetrics);
 
             List<AdminProtos.WALEntry> entries = request.getEntryList();
-            CellScanner cells = ((PayloadCarryingRpcController)controller).cellScanner();
+            CellScanner cells = ((HBaseRpcController)controller).cellScanner();
 
             for (final AdminProtos.WALEntry entry : entries) {
                 TableName tableName = (entry.getKey().getWriteTime() < subscriptionTimestamp) ? null :
